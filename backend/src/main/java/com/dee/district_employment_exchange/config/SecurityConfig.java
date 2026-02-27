@@ -2,8 +2,10 @@ package com.dee.district_employment_exchange.config;
 
 import com.dee.district_employment_exchange.security.JwtAuthFilter;
 import com.dee.district_employment_exchange.security.UserDetailsServiceImpl;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -19,16 +21,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtAuthFilter jwtAuthFilter;
-
-    public SecurityConfig(UserDetailsServiceImpl userDetailsService,
-                          JwtAuthFilter jwtAuthFilter) {
-        this.userDetailsService = userDetailsService;
-        this.jwtAuthFilter = jwtAuthFilter;
-    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http)
@@ -45,6 +42,12 @@ public class SecurityConfig {
                                 "/api/users/register",
                                 "/api/health"
                         ).permitAll()
+                        // Public - anyone can VIEW jobs (no token needed)
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/api/jobs",
+                                "/api/jobs/**"
+                        ).permitAll()
                         // Everything else needs JWT token
                         .anyRequest().authenticated()
                 )
@@ -57,7 +60,8 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        DaoAuthenticationProvider provider =
+                new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
