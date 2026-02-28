@@ -1,10 +1,11 @@
 package com.dee.district_employment_exchange.service;
+
 import com.dee.district_employment_exchange.dto.RegisterRequest;
 import com.dee.district_employment_exchange.dto.UserResponse;
 import com.dee.district_employment_exchange.entity.User;
 import com.dee.district_employment_exchange.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,11 +16,13 @@ import java.util.stream.Collectors;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
-    public UserResponse register(RegisterRequest request){
+    public UserResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already registered: " + request.getEmail());
+            throw new RuntimeException("Email already registered: "
+                    + request.getEmail());
         }
 
         User user = User.builder()
@@ -33,6 +36,11 @@ public class UserService {
                 .build();
 
         User saved = userRepository.save(user);
+
+        // Send welcome email (async - won't slow down response)
+        emailService.sendWelcomeEmail(
+                saved.getEmail(), saved.getName());
+
         return toResponse(saved);
     }
 
@@ -45,7 +53,8 @@ public class UserService {
 
     public UserResponse getUserById(Long id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException(
+                        "User not found with id: " + id));
         return toResponse(user);
     }
 

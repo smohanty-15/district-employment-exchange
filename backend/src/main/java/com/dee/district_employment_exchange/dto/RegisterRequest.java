@@ -22,9 +22,7 @@ public class RegisterRequest {
     private String password;
 
     private String mobileNumber;
-
     private String address;
-
     private String qualifications;
 
     @NotNull(message = "Role is required. Use JOB_SEEKER or EMPLOYER")
