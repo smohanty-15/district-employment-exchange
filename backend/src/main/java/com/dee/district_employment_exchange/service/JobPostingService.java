@@ -58,6 +58,17 @@ public class JobPostingService {
                 .collect(Collectors.toList());
     }
 
+    // SEARCH JOBS
+    public List<JobPostingResponse> searchJobs(String keyword,
+                                               String location,
+                                               JobPosting.JobType jobType) {
+        return jobPostingRepository
+                .searchJobs(keyword, location, jobType)
+                .stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
     // GET JOB BY ID
     public JobPostingResponse getJobById(Long id) {
         JobPosting job = jobPostingRepository.findById(id)

@@ -3,6 +3,7 @@ package com.dee.district_employment_exchange.controller;
 import com.dee.district_employment_exchange.dto.ApiResponse;
 import com.dee.district_employment_exchange.dto.JobPostingRequest;
 import com.dee.district_employment_exchange.dto.JobPostingResponse;
+import com.dee.district_employment_exchange.entity.JobPosting;
 import com.dee.district_employment_exchange.service.JobPostingService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,21 @@ public class JobPostingController {
                 jobPostingService.getAllActiveJobs();
         return ResponseEntity.ok(
                 ApiResponse.success("Jobs retrieved", jobs));
+    }
+
+    // PUBLIC - search jobs with filters
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<JobPostingResponse>>>
+            searchJobs(
+                    @RequestParam(required = false) String keyword,
+                    @RequestParam(required = false) String location,
+                    @RequestParam(required = false) JobPosting.JobType jobType) {
+
+        List<JobPostingResponse> jobs =
+                jobPostingService.searchJobs(keyword, location, jobType);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(jobs.size() + " job(s) found", jobs));
     }
 
     // PUBLIC - anyone can view one job
