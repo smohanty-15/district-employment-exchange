@@ -25,6 +25,7 @@ public class ApplicationService {
     private final ApplicationRepository applicationRepository;
     private final JobPostingRepository jobPostingRepository;
     private final UserRepository userRepository;
+    private final EmailService emailService;
 
     // APPLY FOR JOB
     public ApplicationResponse applyForJob(ApplicationRequest request,
@@ -74,6 +75,22 @@ public class ApplicationService {
                 .build();
 
         Application saved = applicationRepository.save(application);
+
+        // Send confirmation to job seeker
+        emailService.sendApplicationConfirmation(
+                jobSeeker.getEmail(),
+                jobSeeker.getName(),
+                job.getTitle(),
+                job.getEmployer().getName()
+        );
+
+        // Send alert to employer
+        emailService.sendNewApplicationAlert(
+                job.getEmployer().getEmail(),
+                job.getEmployer().getName(),
+                jobSeeker.getName(),
+                job.getTitle()
+        );
         return toResponse(saved);
     }
 
@@ -138,7 +155,7 @@ public class ApplicationService {
 
         Application application = applicationRepository
                 .findById(applicationId)
-                .orElseThrow(() ->new RuntimeException(
+                .orElseThrow(() -> new RuntimeException(
                         "Application not found with id: " + applicationId));
 
         // Make sure this employer owns the job this application is for
@@ -154,6 +171,16 @@ public class ApplicationService {
         }
 
         Application updated = applicationRepository.save(application);
+
+        // Send status update email to job seeker
+        emailService.sendStatusUpdateEmail(
+                application.getJobSeeker().getEmail(),
+                application.getJobSeeker().getName(),
+                application.getJobPosting().getTitle(),
+                request.getStatus().name(),
+                request.getEmployerNotes()
+        );
+
         return toResponse(updated);
     }
 

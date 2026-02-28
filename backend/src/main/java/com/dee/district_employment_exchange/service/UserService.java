@@ -17,6 +17,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     public UserResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -35,6 +36,11 @@ public class UserService {
                 .build();
 
         User saved = userRepository.save(user);
+
+        // Send welcome email (async - won't slow down response)
+        emailService.sendWelcomeEmail(
+                saved.getEmail(), saved.getName());
+
         return toResponse(saved);
     }
 
