@@ -80,6 +80,7 @@ public class JobPosting {
     public enum Status {
         ACTIVE,
         CLOSED,
-        DRAFT
+        DRAFT,
+        SUSPENDED
     }
 }

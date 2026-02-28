@@ -17,6 +17,9 @@ public interface JobPostingRepository extends JpaRepository<JobPosting, Long> {
     // Get all active jobs
     List<JobPosting> findByStatus(JobPosting.Status status);
 
+    // Count by status
+    long countByStatus(JobPosting.Status status);
+
     // Get all active jobs by location
     List<JobPosting> findByStatusAndLocationContainingIgnoreCase(
             JobPosting.Status status, String location);

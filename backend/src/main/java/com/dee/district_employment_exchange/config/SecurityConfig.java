@@ -36,19 +36,18 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .authorizeHttpRequests(auth -> auth
-                        // Public - no token needed
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/api/users/register",
                                 "/api/health"
                         ).permitAll()
-                        // Public - anyone can VIEW jobs (no token needed)
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/jobs",
                                 "/api/jobs/**"
                         ).permitAll()
-                        // Everything else needs JWT token
+                        // Admin only endpoints
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
